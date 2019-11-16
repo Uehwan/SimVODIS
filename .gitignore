@@ -102,3 +102,17 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# editor
+.idea
+.vscode
+
+# SimVODIS specifics
+checkpoints/
+test_results/
+data_raw/
+demo/
+tools/
+temp/
+baseline/
+*.pth
