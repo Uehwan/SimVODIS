@@ -2,10 +2,7 @@
 [Simultaneous Visual Odometry, Object Detection, and Instance Segmentation.](https://arxiv.org/abs/1911.05939)
 SimVODIS extracts both semantic and physical attributes from a sequence of image frames. SimVODIS evaluates the relative pose between frames, while detecting objects and segementing the object boundaries. During the process, depth can be optionally estimated.
 
-## Notification
-Thank you for visiting our repo. :)
-We are reformatting the project for distribution.
-We expect we could finish the reformatting in a few weeks.
+![Comparison](./figures/comparison_people.png)
 
 ## Getting Started
 
@@ -45,10 +42,8 @@ conda install -c anaconda path.py scipy=1.2
 
 ### Pretrained Mask-RCNN model
 
-Download one of the following pretrained Mask-RCNN models and place it under the root directory
+Download the following pretrained Mask-RCNN model and place it under the root directory.
 - [R-50-FPN](https://download.pytorch.org/models/maskrcnn/e2e_mask_rcnn_R_50_FPN_1x.pth)
-- [R-101-FPN](https://download.pytorch.org/models/maskrcnn/e2e_mask_rcnn_R_101_FPN_1x.pth)
-- [X-101-32x8d-FPN](https://download.pytorch.org/models/maskrcnn/e2e_mask_rcnn_X_101_32x8d_FPN_1x.pth)
 
 For more detailed information on the Mask-RCNN models, refer to the [Facebook Mask-RCNN benchmark repo](https://github.com/facebookresearch/maskrcnn-benchmark/blob/master/MODEL_ZOO.md)
 
@@ -57,23 +52,73 @@ For more detailed information on the Mask-RCNN models, refer to the [Facebook Ma
 
 For [KITTI](http://www.cvlibs.net/datasets/kitti/raw_data.php), first download the dataset using this [script](http://www.cvlibs.net/download.php?file=raw_data_downloader.zip) provided on the official website of KITTI. Placing the dataset on SSD would increase the training speed.
 
+You can also download Malaga, ScanNet, NYU Depth, RGB-D SLAM, Make3D and 7 Scenes datasets.
+- Malaga: Download from [the official web](https://www.mrpt.org/MalagaUrbanDataset)
+- ScanNet Request access from [the official repository](https://github.com/ScanNet/ScanNet)
+- NYU Depth: Download from [the official web](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html)
+- RGB-D SLAM: Download from [the official web](https://vision.in.tum.de/data/datasets/rgbd-dataset/download)
+- Make3D: Download from [the official web](http://make3d.cs.cornell.edu/)
+- 7 Scenes: Download from [the official web](https://www.microsoft.com/en-us/research/project/rgb-d-dataset-7-scenes/)
+
 ## Training
+The following trains the SimVODIS_k model described in the paper.
 ```bash
-python train.py
+python train.py \
+    --data_path PATH/TO/DATASET \
+    --split eigen_zhou \
+    --model_name simvodis_k \
+    --log_dir PATH/TO/LOG/DIR \
 ```
 
-## Evaluation
+To use other datasets for training, use the following.
 ```bash
-python test_depth.py
+python train.py \
+    --data_path PATH/TO/DATASET \
+    --split custom \
+    --model_name simvodis_a \
+    --dataset mixed \
+    --log_dir PATH/TO/LOG/DIR \
 ```
 
+After starting the training script, you can check the training process with the following
 ```bash
-python test_pose.py
+tensorboard --logdir=PATH/TO/LOG/DIR
+```
+
+## KITTI Evaluation
+First, you need to export the ground-truth depth map. We follow the approach described in the [Monodepth2](https://github.com/nianticlabs/monodepth2) repository.
+```bash
+python export_gt_depth.py --data_path PATH/TO/KITTI/DATASET --splie eigen
+python export_gt_depth.py --data_path PATH/TO/KITTI/DATASET --splie eigen_benchmark
+```
+
+The following evaluates the depth map prediction performance of trained models on the KITTI benchmark.
+```bash
+python evaluate_depth.py \
+    --data_path PATH/TO/DATASET \
+    --load_weights_folder PATH/TO/MODEL/WEIGHTS \
+    --post_process --save_pred_disp --eval_mono 
+```
+
+The following evaluates the pose estimation performance of trained models on the KITTI benchmark.
+```bash
+python evaluate_pose.py \
+    --eval_split odom_9 \
+    --data_path PATH/TO/KITTI/ODOM/DATASET \
+    --load_weights_folder PATH/TO/MODEL/WEIGHTS
 ```
 
 ## Performance
 
 ### Pretrained Networks
+The following is the pretrained model.
+- [Encoder (same as mask-rcnn)](https://drive.google.com/file/d/1vWJQkYL8y3UQLG-gl-IcVTC9aMlMd5b7/view?usp=sharing)
+- [Depth Decoder](https://drive.google.com/file/d/1Al6vkNDPpDd7i90Ly2uGPPddlzhpuMKI/view?usp=sharing)
+- [Pose Decoder](https://drive.google.com/file/d/1BybvE2seYwDy9VsFlxodSXNl3q8pYI4w/view?usp=sharing)
+
+### Qualitative Results
+![Comparison](./figures/comparison_qualitative.png)
+
 
 ## License
 
@@ -88,7 +133,7 @@ The following is the BibTeX.
 @article{kim2019simvodis,
   title={SimVODIS: Simultaneous Visual Odometry, Object Detection, and Instance Segmentation},
   author={Ue-Hwan Kim, Se-Ho Kim and Jong-Hwan Kim},
-  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence, submitted},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence, Under Review},
   year={2019}
 }
 ```
