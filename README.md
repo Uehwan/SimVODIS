@@ -144,3 +144,4 @@ We base our project on the following repositories
 * [Monodepth2](https://github.com/nianticlabs/monodepth2)
 * [MaskRCNN](https://github.com/facebookresearch/maskrcnn-benchmark)
 
+This work was supported by Institute for Information & communications Technology Promotion (IITP) grant funded by the Korea government (MSIT) (No. 2018-0-00677, Development of Robot Hand Manipulation Intelligence to Learn Methods and Procedures for Handling Various Objects with Tactile Robot Hands)
