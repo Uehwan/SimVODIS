@@ -12,7 +12,7 @@ from options import MonodepthOptions
 options = MonodepthOptions()
 opts = options.parse()
 
-# '''
+
 import cv2
 import torch
 from maskrcnn_benchmark.modeling.roi_heads.mask_head.inference import Masker
@@ -137,8 +137,8 @@ class FuseDetection:
         if self.show_mask_heatmaps:
             return self.create_mask_montage(result, top_predictions)
         result = self.overlay_boxes(result, top_predictions)
-        if self.cfg.MODEL.MASK_ON:
-            result = self.overlay_mask(result, top_predictions)
+        # if self.cfg.MODEL.MASK_ON:
+        #     result = self.overlay_mask(result, top_predictions)
         if self.cfg.MODEL.KEYPOINT_ON:
             result = self.overlay_keypoints(result, top_predictions)
         result = self.overlay_class_names(result, top_predictions)
@@ -286,30 +286,36 @@ class FuseDetection:
         colors = labels[:, None] * self.palette
         colors = (colors % 255).numpy().astype("uint8")
         return colors
-# '''
 
 
 if __name__ == "__main__":
     trainer = Trainer(opts)
-    trainer.train()
-    '''
+    # trainer.train()
+
+    
     import torch
     import time
 
+    time0 = time.time()
     print("Models loaded...")
     print("Number Parameters -> Encoder:", sum(p.numel() for p in trainer.models['encoder'].parameters()))
-    print("Number Parameters -> Depth:", sum(p.numel() for p in trainer.models['depth'].parameters()))
-    print("Number Parameters -> Pose:", sum(p.numel() for p in trainer.models['pose'].parameters()))
+    # print("Number Parameters -> Depth:", sum(p.numel() for p in trainer.models['depth'].parameters()))
+    # print("Number Parameters -> Pose:", sum(p.numel() for p in trainer.models['pose'].parameters()))
 
     time1 = time.time()
+    print("Time for loading models:", time1 - time0)
+
     ds = iter(trainer.train_loader)
     inputs = next(ds)
     time2 = time.time()
     print("Time for dataloading:", time2 - time1)
 
     for key, ipt in inputs.items():
+        if key == 'dataset':
+            continue
         inputs[key] = ipt.to(trainer.device)
     all_color_aug = torch.cat([inputs[("color_aug", i, 0)] for i in trainer.opt.frame_ids])
+    
     all_features = trainer.models['encoder'](all_color_aug)
     all_features = [torch.split(f, trainer.opt.batch_size) for f in all_features]
     features = {}
@@ -349,4 +355,4 @@ if __name__ == "__main__":
         plt.figure()
         plt.imshow(eg_result)
     plt.show()
-    # '''
+    

@@ -38,7 +38,7 @@ class ResnetEncoder(nn.Module):
     """
 
     def __init__(
-        self, cfg, pretrained_model_path, build_transform=False
+        self, cfg, pretrained_model_path, build_transform=False, joint_training=False
     ):
         super(ResnetEncoder, self).__init__()
 
@@ -47,6 +47,7 @@ class ResnetEncoder(nn.Module):
         self.transforms = None
         if build_transform:
             self.transforms = self.build_transform()
+        self.joint_training = joint_training
         self.device = torch.device(cfg.MODEL.DEVICE)
 
         # loading mask rcnn
@@ -59,15 +60,15 @@ class ResnetEncoder(nn.Module):
         )
         _ = self.checkpointer.load(pretrained_model_path)
 
-        # freeze gradients for mask rcnn
-        for param in self.maskrcnn.backbone.parameters():
-            param.requires_grad = False
-        for param in self.maskrcnn.rpn.parameters():
-            param.requires_grad = False
-        for param in self.maskrcnn.roi_heads.parameters():
-            param.requires_grad = False
+        if not self.joint_training:
+            # freeze gradients for mask rcnn
+            for param in self.maskrcnn.backbone.parameters():
+                param.requires_grad = False
+            for param in self.maskrcnn.rpn.parameters():
+                param.requires_grad = False
+            for param in self.maskrcnn.roi_heads.parameters():
+                param.requires_grad = False
 
-    # def forward(self, img_ref, img_before, img_after):
     def forward(self, images):
         """
         Arguments:

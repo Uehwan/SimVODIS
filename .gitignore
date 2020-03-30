@@ -110,9 +110,12 @@ venv.bak/
 # SimVODIS specifics
 checkpoints/
 test_results/
+splits/eigen/gt_depths.npz
+inference/
 data_raw/
+datasets/coco/
 demo/
-tools/
+# tools/
 temp/
 baseline/
 *.pth

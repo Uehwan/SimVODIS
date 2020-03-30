@@ -9,6 +9,7 @@ from maskrcnn_benchmark.utils.c2_model_loading import load_c2_format
 from maskrcnn_benchmark.utils.imports import import_file
 from maskrcnn_benchmark.utils.model_zoo import cache_url
 
+from collections import OrderedDict
 
 class Checkpointer(object):
     def __init__(
@@ -49,7 +50,7 @@ class Checkpointer(object):
         torch.save(data, save_file)
         self.tag_last_checkpoint(save_file)
 
-    def load(self, f=None):
+    def load(self, f=None, convert=False):
         if self.has_checkpoint():
             # override argument with existing checkpoint
             f = self.get_checkpoint_file()
@@ -58,7 +59,11 @@ class Checkpointer(object):
             self.logger.info("No checkpoint found. Initializing model from scratch")
             return {}
         self.logger.info("Loading checkpoint from {}".format(f))
-        checkpoint = self._load_file(f)
+        checkpoint_old = self._load_file(f)
+        if convert:
+            checkpoint = self._convert_checkpoint(checkpoint_old)
+        else:
+            checkpoint = checkpoint_old
         self._load_model(checkpoint)
         if "optimizer" in checkpoint and self.optimizer:
             self.logger.info("Loading optimizer from {}".format(f))
@@ -90,6 +95,12 @@ class Checkpointer(object):
         save_file = os.path.join(self.save_dir, "last_checkpoint")
         with open(save_file, "w") as f:
             f.write(last_filename)
+
+    def _convert_checkpoint(self, ckp):
+        checkpoint_new = {'model': OrderedDict()}
+        for k in ckp['model'].keys():
+            checkpoint_new['model'][k.replace('maskrcnn', 'module')] = ckp['model'][k]
+        return checkpoint_new
 
     def _load_file(self, f):
         return torch.load(f, map_location=torch.device("cpu"))

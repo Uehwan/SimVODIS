@@ -28,7 +28,7 @@ from IPython import embed
 from maskrcnn_benchmark.config import cfg
 
 class Trainer:
-    def __init__(self, options):
+    def __init__(self, options, joint_training=False):
         self.opt = options
         self.log_path = os.path.join(self.opt.log_dir, self.opt.model_name)
 
@@ -54,13 +54,22 @@ class Trainer:
 
         config_file = "./configs/e2e_mask_rcnn_R_50_FPN_1x.yaml"
         cfg.merge_from_file(config_file)
+        if joint_training:
+            self.joint_training = True
+            cfg.merge_from_list(options.opts)
+        else:
+            self.joint_training = False
+            
         cfg.freeze()
-        maskrcnn_path = "./e2e_mask_rcnn_R_50_FPN_1x.pth"
+        self.cfg = cfg
+        maskrcnn_path = "./e2e_mask_rcnn_R_50_FPN_1x.pth"  # "./encoder.pth"
 
         self.models["encoder"] = networks.ResnetEncoder(
-            cfg, maskrcnn_path
+            self.cfg, maskrcnn_path, joint_training=self.joint_training
         )
         self.models["encoder"].to(self.device)
+        if self.joint_training:
+            self.parameters_to_train += list(self.models["encoder"].parameters())
 
         self.models["depth"] = networks.DepthDecoder(scales=self.opt.scales)
         self.models["depth"].to(self.device)
@@ -70,10 +79,6 @@ class Trainer:
             self.models["pose"] = networks.PoseDecoder(self.num_pose_frames)
             self.models["pose"].to(self.device)
             self.parameters_to_train += list(self.models["pose"].parameters())
-
-        self.models["attention"] = networks.AttentionDecoder(scales=self.opt.scales)
-        self.models["attention"].to(self.device)
-        self.parameters_to_train += list(self.models["attention"].parameters())
 
         if self.opt.predictive_mask:
             assert self.opt.disable_automasking, \
@@ -163,7 +168,8 @@ class Trainer:
         """
         for m in self.models.values():
             m.train()
-        self.models["encoder"].eval()
+        if not self.joint_training:
+            self.models["encoder"].eval()
 
     def set_eval(self):
         """Convert all models to testing/evaluation mode
@@ -239,12 +245,10 @@ class Trainer:
                 features[k] = [f[i] for f in all_features]
 
             outputs = self.models["depth"](features[0])
-            attentions = self.models["attention"](features[0])
         else:
             # Otherwise, we only feed the image with frame_id 0 through the depth encoder
             features = self.models["encoder"](inputs["color_aug", 0, 0])
             outputs = self.models["depth"](features)
-            attentions = self.models["attention"](features)
 
         if self.opt.predictive_mask:
             outputs["predictive_mask"] = self.models["predictive_mask"](features)

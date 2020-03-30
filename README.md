@@ -80,16 +80,45 @@ python train.py \
     --log_dir PATH/TO/LOG/DIR \
 ```
 
-After starting the training script, you can check the training process with the following
+After starting the training script, you can check the training process with the following.
 ```bash
 tensorboard --logdir=PATH/TO/LOG/DIR
+```
+
+## Joint Training on MS COCO and KITTI
+First, you need to install pycoco-tolls as follows.
+```bash
+# install pycocotools
+pip install -U 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI'
+
+# install apex
+cd $INSTALL_DIR
+git clone https://github.com/NVIDIA/apex.git
+cd apex
+python setup.py install --cuda_ext --cpp_ext
+```
+
+Next, download MS COCO 2014 from [the official website](http://cocodataset.org/#download), extra annotation from [here](http://datasets.d2.mpi-inf.mpg.de/hosang17cvpr/coco_minival2014.tar.gz) and make symbolic links as follows.
+
+```bash
+cd /path_to_SimVODIS_directory
+mkdir -p datasets/coco
+ln -s /path_to_coco_dataset/annotations datasets/coco/annotations
+ln -s /path_to_coco_dataset/train2014 datasets/coco/train2014
+ln -s /path_to_coco_dataset/test2014 datasets/coco/test2014
+ln -s /path_to_coco_dataset/val2014 datasets/coco/val2014
+```
+
+Finally, run the following command to train SimVODIS on both MS COCO and KITTI.
+```bash
+CUDA_VISIBLE_DEVICES=1 python -W ignore train_joint.py --config-file "configs/e2e_mask_rcnn_R_50_FPN_1x.yaml" SOLVER.IMS_PER_BATCH 2 SOLVER.BASE_LR 0.0025 SOLVER.MAX_ITER 720000 SOLVER.STEPS "(480000, 640000)" TEST.IMS_PER_BATCH 1 MODEL.RPN.FPN_POST_NMS_TOP_N_TRAIN 2000
 ```
 
 ## KITTI Evaluation
 First, you need to export the ground-truth depth map. We follow the approach described in the [Monodepth2](https://github.com/nianticlabs/monodepth2) repository.
 ```bash
-python export_gt_depth.py --data_path PATH/TO/KITTI/DATASET --splie eigen
-python export_gt_depth.py --data_path PATH/TO/KITTI/DATASET --splie eigen_benchmark
+python export_gt_depth.py --data_path PATH/TO/KITTI/DATASET --split eigen
+python export_gt_depth.py --data_path PATH/TO/KITTI/DATASET --split eigen_benchmark
 ```
 
 The following evaluates the depth map prediction performance of trained models on the KITTI benchmark.
@@ -107,6 +136,8 @@ python evaluate_pose.py \
     --data_path PATH/TO/KITTI/ODOM/DATASET \
     --load_weights_folder PATH/TO/MODEL/WEIGHTS
 ```
+
+## 
 
 ## Performance
 

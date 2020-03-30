@@ -13,7 +13,7 @@ file_dir = os.path.dirname(__file__)  # the directory that options.py resides in
 
 
 class MonodepthOptions:
-    def __init__(self):
+    def __init__(self, withMaskRCNN=False):
         self.parser = argparse.ArgumentParser(description="Monodepthv2 options")
 
         # PATHS
@@ -201,6 +201,29 @@ class MonodepthOptions:
                                  help="if set will perform the flipping post processing "
                                       "from the original monodepth paper",
                                  action="store_true")
+        
+        # Mask-RCNN part
+        if withMaskRCNN:
+             self.parser.add_argument(
+                  "--config-file",
+                  default="",
+                  metavar="FILE",
+                  help="path to config file",
+                  type=str,
+             )
+             self.parser.add_argument("--local_rank", type=int, default=0)
+             self.parser.add_argument(
+                  "--skip-test",
+                  dest="skip_test",
+                  help="Do not test the final model",
+                  action="store_true",
+             )
+             self.parser.add_argument(
+                  "opts",
+                  help="Modify config options using the command-line",
+                  default=None,
+                  nargs=argparse.REMAINDER,
+             )
 
     def parse(self):
         self.options = self.parser.parse_args()
