@@ -36,7 +36,7 @@ class ROIBoxHead(torch.nn.Module):
                 head. During testing, returns an empty dict.
         """
 
-        if self.training:
+        if self.training and targets is not None:
             # Faster R-CNN subsamples during training the proposals with a fixed
             # positive / negative ratio
             with torch.no_grad():
@@ -48,7 +48,7 @@ class ROIBoxHead(torch.nn.Module):
         # final classifier that converts the features into predictions
         class_logits, box_regression = self.predictor(x)
 
-        if not self.training:
+        if not self.training or targets is None:
             result = self.post_processor((class_logits, box_regression), proposals)
             return x, result, {}
 

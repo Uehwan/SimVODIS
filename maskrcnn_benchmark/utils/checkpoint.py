@@ -99,6 +99,8 @@ class Checkpointer(object):
     def _convert_checkpoint(self, ckp):
         checkpoint_new = {'model': OrderedDict()}
         for k in ckp['model'].keys():
+            if 'maskrcnn' not in k:
+                continue
             checkpoint_new['model'][k.replace('maskrcnn', 'module')] = ckp['model'][k]
         return checkpoint_new
 

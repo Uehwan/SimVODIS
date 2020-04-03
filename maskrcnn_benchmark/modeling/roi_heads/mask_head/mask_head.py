@@ -59,18 +59,18 @@ class ROIMaskHead(torch.nn.Module):
                 head. During testing, returns an empty dict.
         """
 
-        if self.training:
+        if self.training and targets is not None:
             # during training, only focus on positive boxes
             all_proposals = proposals
             proposals, positive_inds = keep_only_positive_boxes(proposals)
-        if self.training and self.cfg.MODEL.ROI_MASK_HEAD.SHARE_BOX_FEATURE_EXTRACTOR:
+        if self.training and targets is not None and self.cfg.MODEL.ROI_MASK_HEAD.SHARE_BOX_FEATURE_EXTRACTOR:
             x = features
             x = x[torch.cat(positive_inds, dim=0)]
         else:
             x = self.feature_extractor(features, proposals)
         mask_logits = self.predictor(x)
 
-        if not self.training:
+        if not self.training or targets is None:
             result = self.post_processor(mask_logits, proposals)
             return x, result, {}
 

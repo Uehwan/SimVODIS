@@ -91,6 +91,10 @@ class MonodepthOptions:
                                  type=float,
                                  help="learning rate",
                                  default=2e-5)
+        self.parser.add_argument("--learning_rate_maskrcnn",
+                                 type=float,
+                                 help="learning rate",
+                                 default=2e-5)
         self.parser.add_argument("--num_epochs",
                                  type=int,
                                  help="number of epochs",
@@ -99,6 +103,10 @@ class MonodepthOptions:
                                  type=int,
                                  help="step size of the scheduler",
                                  default=15)
+        self.parser.add_argument("--scheduler_gamma",
+                                 type=float,
+                                 help="step size of the scheduler",
+                                 default=0.1)
 
         # ABLATION options
         self.parser.add_argument("--v1_multiscale",
@@ -149,7 +157,10 @@ class MonodepthOptions:
                                  nargs="+",
                                  type=str,
                                  help="models to load",
-                                 default=["encoder", "depth", "pose_encoder", "pose"])
+                                 default=["encoder", "depth", "pose"])
+        self.parser.add_argument("--maskrcnn_weights",
+                                 type=str,
+                                 help="name of model to load")
 
         # LOGGING options
         self.parser.add_argument("--log_frequency",

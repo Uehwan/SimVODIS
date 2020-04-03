@@ -62,7 +62,9 @@ class Trainer:
             
         cfg.freeze()
         self.cfg = cfg
-        maskrcnn_path = "./e2e_mask_rcnn_R_50_FPN_1x.pth"  # "./encoder.pth"
+        # maskrcnn_path = "./e2e_mask_rcnn_R_50_FPN_1x.pth"
+        maskrcnn_path = self.opt.maskrcnn_weights
+        # maskrcnn_path = "./weights/encoder.pth"
 
         self.models["encoder"] = networks.ResnetEncoder(
             self.cfg, maskrcnn_path, joint_training=self.joint_training
@@ -94,7 +96,7 @@ class Trainer:
 
         self.model_optimizer = optim.Adam(self.parameters_to_train, self.opt.learning_rate)
         self.model_lr_scheduler = optim.lr_scheduler.StepLR(
-            self.model_optimizer, self.opt.scheduler_step_size, 0.1)
+            self.model_optimizer, self.opt.scheduler_step_size, self.opt.scheduler_gamma)
 
         if self.opt.load_weights_folder is not None:
             self.load_model()
@@ -602,8 +604,8 @@ class Trainer:
                 to_save['use_stereo'] = self.opt.use_stereo
             torch.save(to_save, save_path)
 
-        save_path = os.path.join(save_folder, "{}.pth".format("adam"))
-        torch.save(self.model_optimizer.state_dict(), save_path)
+        # save_path = os.path.join(save_folder, "{}.pth".format("adam"))
+        # torch.save(self.model_optimizer.state_dict(), save_path)
 
     def load_model(self):
         """Load model(s) from disk

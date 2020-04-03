@@ -316,6 +316,7 @@ if __name__ == "__main__":
         inputs[key] = ipt.to(trainer.device)
     all_color_aug = torch.cat([inputs[("color_aug", i, 0)] for i in trainer.opt.frame_ids])
     
+    trainer.set_eval()
     all_features = trainer.models['encoder'](all_color_aug)
     all_features = [torch.split(f, trainer.opt.batch_size) for f in all_features]
     features = {}

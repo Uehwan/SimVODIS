@@ -20,6 +20,22 @@ def make_optimizer(cfg, model):
     return optimizer
 
 
+def make_optimizer_simvodis(cfg, model, learning_rate):
+    params = []
+    for key, value in model.named_parameters():
+        if not value.requires_grad:
+            continue
+        lr = learning_rate
+        weight_decay = cfg.SOLVER.WEIGHT_DECAY
+        if "bias" in key:
+            lr = cfg.SOLVER.BASE_LR * cfg.SOLVER.BIAS_LR_FACTOR
+            weight_decay = cfg.SOLVER.WEIGHT_DECAY_BIAS
+        params += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
+
+    optimizer = torch.optim.SGD(params, lr, momentum=cfg.SOLVER.MOMENTUM)
+    return optimizer
+
+
 def make_lr_scheduler(cfg, optimizer):
     return WarmupMultiStepLR(
         optimizer,

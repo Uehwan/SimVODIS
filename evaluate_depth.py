@@ -85,15 +85,15 @@ def evaluate(opt):
 
         dataset = datasets.KITTIRAWDataset(opt.data_path, filenames,
                                            encoder_dict['height'], encoder_dict['width'],
-                                           [0], 1, 4, is_train=False, img_ext='.png')
-        dataloader = DataLoader(dataset, 8, shuffle=False, num_workers=opt.num_workers,
+                                           [0], 1, 4, is_train=False)# , img_ext='.png')
+        dataloader = DataLoader(dataset, 4, shuffle=False, num_workers=opt.num_workers,
                                 pin_memory=True, drop_last=False)
         
         config_file = "./configs/e2e_mask_rcnn_R_50_FPN_1x.yaml"
         cfg.merge_from_file(config_file)
         cfg.freeze()
         maskrcnn_path = "./e2e_mask_rcnn_R_50_FPN_1x.pth"
-        encoder = networks.ResnetEncoder(cfg, maskrcnn_path)
+        encoder = networks.ResnetEncoder(cfg, maskrcnn_path, do_not_load_pretrained=True)
         depth_decoder = networks.DepthDecoder(scales=opt.scales)
 
         model_dict = encoder.state_dict()

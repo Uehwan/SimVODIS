@@ -38,7 +38,7 @@ class ResnetEncoder(nn.Module):
     """
 
     def __init__(
-        self, cfg, pretrained_model_path, build_transform=False, joint_training=False
+        self, cfg, pretrained_model_path=None, build_transform=False, joint_training=False
     ):
         super(ResnetEncoder, self).__init__()
 
@@ -58,7 +58,8 @@ class ResnetEncoder(nn.Module):
         self.checkpointer = DetectronCheckpointer(
             cfg, self.maskrcnn, save_dir='.'
         )
-        _ = self.checkpointer.load(pretrained_model_path)
+        if pretrained_model_path is not None:
+            _ = self.checkpointer.load(pretrained_model_path, convert=True)
 
         if not self.joint_training:
             # freeze gradients for mask rcnn
@@ -109,10 +110,13 @@ class ResnetEncoder(nn.Module):
         if not self.training and self.transforms is not None:
             images = self.transforms(images)
         image_list = to_image_list(images)
-
-        with torch.no_grad():
-            predictions, features = self.maskrcnn(image_list)
-        self.features, self.predictions = features, predictions
+        
+        if self.training:
+            _, self.features = self.maskrcnn(image_list)
+        else:
+            with torch.no_grad():
+                predictions, features = self.maskrcnn(image_list)
+            self.features, self.predictions = features, predictions
         
         return self.features
 
