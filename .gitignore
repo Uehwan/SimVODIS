@@ -119,3 +119,5 @@ demo/
 temp/
 baseline/
 *.pth
+log.txt
+config.yml

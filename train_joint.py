@@ -47,13 +47,11 @@ class JointTrainer(Trainer):
 
         self.arguments = {}
         self.arguments["iteration"] = 0
-        self.data_loader_maskrcnn = iter(
-            make_data_loader(
-                self.cfg,
-                is_train=True,
-                is_distributed=False,
-                start_iter=self.arguments["iteration"],
-            )
+        self.data_loader_maskrcnn = make_data_loader(
+            self.cfg,
+            is_train=True,
+            is_distributed=False,
+            start_iter=self.arguments["iteration"],
         )
     
     def run_one_step_simvodis(self):
@@ -90,7 +88,7 @@ class JointTrainer(Trainer):
         self.step = 0
         self.start_time = time.time()
         print("Training iteratively for the whole SimVODIS and Mask-RCNN")
-        '''
+        
         for _ in range(self.opt.num_epochs):
             do_train_one_step(
                 self.cfg,
@@ -106,7 +104,6 @@ class JointTrainer(Trainer):
             if self.arguments["iteration"] % self.opt.save_frequency == 0:
                 self.save_model()
                 self.epoch += 1
-        '''
 
 
 if __name__ == "__main__":

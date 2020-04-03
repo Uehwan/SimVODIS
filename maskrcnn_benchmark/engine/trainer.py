@@ -207,7 +207,7 @@ def do_train_one_step(
     if cfg.MODEL.KEYPOINT_ON:
         iou_types = iou_types + ("keypoints",)
 
-    images, targets, _ = data_loader.next()
+    images, targets, _ = iter(data_loader).next()
 
     if any(len(target) < 1 for target in targets):
         logger.error(f"Iteration={iteration + 1} || Image Ids used for training {_} || targets Length={[len(target) for target in targets]}" )
