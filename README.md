@@ -3,6 +3,7 @@
 SimVODIS extracts both semantic and physical attributes from a sequence of image frames. SimVODIS evaluates the relative pose between frames, while detecting objects and segementing the object boundaries. During the process, depth can be optionally estimated.
 
 ![Comparison](./figures/comparison_people.png)
+You can download the predicted results for the Eigen split from [here](https://drive.google.com/file/d/1K0DBtcL38TtnB29RdcOr3eOG4QAeHfS5/view?usp=sharing).
 
 ## Getting Started
 
